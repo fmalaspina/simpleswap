@@ -617,6 +617,23 @@
 			},
 			"kind": "dev",
 			"methods": {
+				"addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)": {
+					"params": {
+						"amountADesired": "Amount of token A the user wants to deposit",
+						"amountAMin": "Minimum acceptable amount A (slippage guard)",
+						"amountBDesired": "Amount of token B the user wants to deposit",
+						"amountBMin": "Minimum acceptable amount B (slippage guard)",
+						"deadline": "Unix timestamp after which the tx is invalid",
+						"to": "Recipient of the newly minted LT",
+						"tokenA": "Address of token A",
+						"tokenB": "Address of token B"
+					},
+					"returns": {
+						"amountASent": "  Final amount A deposited",
+						"amountBSent": "  Final amount B deposited",
+						"liquidity": "    LT tokens minted"
+					}
+				},
 				"allowance(address,address)": {
 					"details": "See {IERC20-allowance}."
 				},
@@ -626,11 +643,51 @@
 				"balanceOf(address)": {
 					"details": "See {IERC20-balanceOf}."
 				},
+				"constructor": {
+					"details": "Deploy the LP ERC-20.      Name / symbol follow the assignment requirement."
+				},
 				"decimals()": {
 					"details": "Returns the number of decimals used to get its user representation. For example, if `decimals` equals `2`, a balance of `505` tokens should be displayed to a user as `5.05` (`505 / 10 ** 2`). Tokens usually opt for a value of 18, imitating the relationship between Ether and Wei. This is the default value returned by this function, unless it's overridden. NOTE: This information is only used for _display_ purposes: it in no way affects any of the arithmetic of the contract, including {IERC20-balanceOf} and {IERC20-transfer}."
 				},
+				"getAmountOut(uint256,uint256,uint256)": {
+					"params": {
+						"amountIn": "Exact tokens sent to the pool",
+						"reserveIn": "Current reserve of the input token",
+						"reserveOut": "Current reserve of the output token"
+					},
+					"returns": {
+						"amountOut": "  Tokens that will be received"
+					}
+				},
+				"getPrice(address,address)": {
+					"details": "Returned with 18 decimals of precision."
+				},
 				"name()": {
 					"details": "Returns the name of the token."
+				},
+				"removeLiquidity(address,address,uint256,uint256,uint256,address,uint256)": {
+					"params": {
+						"amountAMin": "Minimum token A to receive",
+						"amountBMin": "Minimum token B to receive",
+						"deadline": "Timestamp after which tx is invalid",
+						"liquidity": "Amount of LT to burn",
+						"to": "Recipient of tokens A & B",
+						"tokenA": "Address of token A",
+						"tokenB": "Address of token B"
+					},
+					"returns": {
+						"amountASent": "Amount A withdrawn",
+						"amountBSent": "Amount B withdrawn"
+					}
+				},
+				"swapExactTokensForTokens(uint256,uint256,address[],address,uint256)": {
+					"params": {
+						"amountIn": "Exact tokens provided",
+						"amountOutMin": "Minimum acceptable tokens to receive",
+						"deadline": "Timestamp limit for tx validity",
+						"path": "Ordered array [tokenIn, tokenOut]",
+						"to": "Recipient of the output tokens"
+					}
 				},
 				"symbol()": {
 					"details": "Returns the symbol of the token, usually a shorter version of the name."
@@ -645,11 +702,32 @@
 					"details": "See {IERC20-transferFrom}. Skips emitting an {Approval} event indicating an allowance update. This is not required by the ERC. See {xref-ERC20-_approve-address-address-uint256-bool-}[_approve]. NOTE: Does not update the allowance if the current allowance is the maximum `uint256`. Requirements: - `from` and `to` cannot be the zero address. - `from` must have a balance of at least `value`. - the caller must have allowance for ``from``'s tokens of at least `value`."
 				}
 			},
+			"title": "SimpleSwap",
 			"version": 1
 		},
 		"userdoc": {
 			"kind": "user",
-			"methods": {},
+			"methods": {
+				"addLiquidity(address,address,uint256,uint256,uint256,uint256,address,uint256)": {
+					"notice": "Add liquidity to an empty or existing pool."
+				},
+				"getAmountOut(uint256,uint256,uint256)": {
+					"notice": "Deterministic output amount for a given input,         preserving the constant-product invariant `x*y=k`."
+				},
+				"getPrice(address,address)": {
+					"notice": "Spot price of `tokenA` denominated in `tokenB`."
+				},
+				"pools(bytes32)": {
+					"notice": "Mapping from `keccak256(token0, token1)` to pool data"
+				},
+				"removeLiquidity(address,address,uint256,uint256,uint256,address,uint256)": {
+					"notice": "Burn LT and withdraw the underlying tokens."
+				},
+				"swapExactTokensForTokens(uint256,uint256,address[],address,uint256)": {
+					"notice": "Swap an exact `amountIn` of `path[0]` for as many `path[1]`         tokens as possible, enforcing `amountOutMin` as slippage guard."
+				}
+			},
+			"notice": "Minimal AMM (Uniswap-V2–style, no fee) that lets users         – add / remove liquidity for a token pair,         – swap an exact amount of one token for the other,         – query pool price and deterministic amount-out.         Liquidity positions are represented by an ERC-20 token         named **Liquidity Token (LT)** that can be freely transferred.",
 			"version": 1
 		}
 	},
@@ -734,11 +812,11 @@
 			]
 		},
 		"SimpleSwap.sol": {
-			"keccak256": "0xb861db9cdc908dbd03ebaeb6321067a060ac6b388420e4d783c9909f9bc2cefc",
+			"keccak256": "0x9608dc1920c8fbefc078efbe87c48c0047473461c1c31a170848291e86bf4f03",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://021ff7c4de8e3f15dff43176795727d0499728b7cfb420253261c3e4e17ba35e",
-				"dweb:/ipfs/QmXwfmqAvvF7J52s1rnS657ieDWiP44AAZvD7RBWk9QGsR"
+				"bzz-raw://e5d38f397aea27b7b326e9dd78e85f4ccad299043a65432eb6b457c712172758",
+				"dweb:/ipfs/QmU2Tx5kuBUPJdLhozDpWcjSnELpXUkTshdtnyuPdVgxqH"
 			]
 		}
 	},
