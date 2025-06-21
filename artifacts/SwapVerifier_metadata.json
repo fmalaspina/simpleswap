@@ -1,0 +1,126 @@
+{
+	"compiler": {
+		"version": "0.8.30+commit.73712a01"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "",
+						"type": "uint256"
+					}
+				],
+				"name": "authors",
+				"outputs": [
+					{
+						"internalType": "string",
+						"name": "",
+						"type": "string"
+					}
+				],
+				"stateMutability": "view",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "address",
+						"name": "swapContract",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "tokenA",
+						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "tokenB",
+						"type": "address"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountA",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountB",
+						"type": "uint256"
+					},
+					{
+						"internalType": "uint256",
+						"name": "amountIn",
+						"type": "uint256"
+					},
+					{
+						"internalType": "string",
+						"name": "author",
+						"type": "string"
+					}
+				],
+				"name": "verify",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {
+				"verify(address,address,address,uint256,uint256,uint256,string)": {
+					"params": {
+						"amountA": "Initial amount of tokenA to mint and add as liquidity.",
+						"amountB": "Initial amount of tokenB to mint and add as liquidity.",
+						"amountIn": "Amount of tokenA to swap for tokenB.",
+						"author": "Name of the author of swap contract",
+						"swapContract": "Address of the SimpleSwap contract to verify.",
+						"tokenA": "Address of a test ERC20 token (must implement IMintableERC20).",
+						"tokenB": "Address of a test ERC20 token (must implement IMintableERC20)."
+					}
+				}
+			},
+			"title": "SwapVerifier",
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {
+				"verify(address,address,address,uint256,uint256,uint256,string)": {
+					"notice": "Runs end-to-end checks on a deployed SimpleSwap contract."
+				}
+			},
+			"notice": "Verifies a SimpleSwap implementation by exercising its functions and asserting correct behavior.",
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"Verifier.sol": "SwapVerifier"
+		},
+		"evmVersion": "prague",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"Verifier.sol": {
+			"keccak256": "0xf7660855fabca278a4064fe477ab27474083d41cc4bc86958dfb0c502b050549",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://ed77f69b3d264e76acead365e540afda509b2a4d6db09d3f9e62ca68a4d7d66c",
+				"dweb:/ipfs/QmNNRWKmiQyigLApVoJMGqzKhfKVRHg2TCjFf965PmHCxa"
+			]
+		}
+	},
+	"version": 1
+}

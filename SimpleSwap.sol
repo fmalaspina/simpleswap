@@ -1,10 +1,11 @@
 // SPDX-License-Identifier: MIT
-pragma solidity ^0.8.20;
+pragma solidity ^0.8.30;
 
 import "@openzeppelin/contracts/token/ERC20/IERC20.sol";
 import "@openzeppelin/contracts/utils/math/Math.sol";
+import "@openzeppelin/contracts/token/ERC20/ERC20.sol";
 
-contract SimpleSwap {
+contract SimpleSwap is ERC20 {
     using Math for uint256;
 
     struct Pool {
@@ -15,8 +16,9 @@ contract SimpleSwap {
 
     
     mapping(bytes32 => Pool) public pools;
-    mapping(bytes32 => mapping(address => uint)) public lpBalance;
+    
 
+    constructor() ERC20("Liquidity Token", "LT") {}
     
     function _key(address tokenA, address tokenB) internal pure returns (bytes32) {  
         (address t0, address t1) = tokenA < tokenB ? (tokenA, tokenB) : (tokenB, tokenA);   
@@ -67,34 +69,18 @@ contract SimpleSwap {
         require(liquidity > 0, "LIQ=0");
 
         
-        IERC20(tokenA).transferFrom(msg.sender, to, amountASent);
-        IERC20(tokenB).transferFrom(msg.sender, to, amountBSent);
+        IERC20(tokenA).transferFrom(msg.sender, address(this), amountASent);
+        IERC20(tokenB).transferFrom(msg.sender, address(this), amountBSent);
 
         
         p.reserveA       += amountASent;
         p.reserveB       += amountBSent;
         p.totalLiquidity += liquidity;
-        lpBalance[pairKey][msg.sender] += liquidity;
-
+        
+        _mint(to, liquidity);
         return (amountASent, amountBSent, liquidity);
     }
-    /**
-    * @dev Wrapper function to allow deadline as ttl in seconds
-    */
-
-    function addLiquidityWithTtl(
-        address tokenA,
-        address tokenB,
-        uint amountADesired,
-        uint amountBDesired,
-        uint amountAMin,
-        uint amountBMin,
-        address to,
-        uint ttlSeconds
-        ) external returns (uint amountA, uint amountB, uint liquidity) {
-            uint deadline = block.timestamp + ttlSeconds;
-            return addLiquidity(tokenA, tokenB, amountADesired, amountBDesired, amountAMin, amountBMin, to, deadline);
-    }
+    
 
 
 
@@ -107,11 +93,10 @@ contract SimpleSwap {
                             uint deadline) public returns (uint amountASent, uint amountBSent) {
     
             require(block.timestamp <= deadline, "Expired");
-
+            require(balanceOf(msg.sender) >= liquidity, "LP low");
             bytes32 pairKey = _key(tokenA, tokenB);
             Pool storage p = pools[pairKey];
-            require(lpBalance[pairKey][msg.sender] >= liquidity, "Not enough LP tokens");
-
+            
             
             amountASent = (liquidity * p.reserveA) / p.totalLiquidity;
             amountBSent = (liquidity * p.reserveB) / p.totalLiquidity;
@@ -125,29 +110,61 @@ contract SimpleSwap {
             p.totalLiquidity -= liquidity;
 
             
-            lpBalance[pairKey][msg.sender] -= liquidity;
 
             
             IERC20(tokenA).transfer(to, amountASent);
             IERC20(tokenB).transfer(to, amountBSent);
-
+            _burn(msg.sender, liquidity);
             return (amountASent, amountBSent);
     }
 
-    /**
-    * @dev Wrapper function to allow deadline as ttl in seconds
-    */
-    function removeLiquidityWithTtl(
-        address tokenA,
-        address tokenB,
-        uint liquidity,
-        uint amountAMin,
-        uint amountBMin,
-        address to,
-        uint ttlSeconds
-        ) external returns (uint amountASent, uint amountBSent) {
-            uint deadline = block.timestamp + ttlSeconds;
-            return removeLiquidity(tokenA, tokenB, liquidity, amountAMin, amountBMin, to, deadline);
+    
+    function getAmountOut(
+        uint amountIn,
+        uint reserveIn,
+        uint reserveOut
+    ) public pure returns (uint amountOut) {
+        require(amountIn > 0 && reserveIn > 0 && reserveOut > 0, "Bad inputs");
+        amountOut = (amountIn * reserveOut) / (reserveIn + amountIn); // sin fee
     }
 
+    function getPrice(address tokenA, address tokenB)
+        external view returns (uint price)
+    {
+        bytes32 k = _key(tokenA, tokenB);
+        Pool storage p = pools[k];
+        require(p.reserveA > 0 && p.reserveB > 0, "No reserves");
+
+        price = (p.reserveB * 1e18) / p.reserveA;
+    }
+
+    function swapExactTokensForTokens(
+        uint amountIn,
+        uint amountOutMin,
+        address[] calldata path,
+        address to,
+        uint deadline
+    ) external {
+        require(block.timestamp <= deadline, "Expired");
+        require(path.length == 2 && amountIn > 0, "Bad params");
+
+        bytes32 k = _key(path[0], path[1]);
+        Pool storage p = pools[k];
+        require(p.totalLiquidity > 0, "Pool empty");
+
+        
+        uint reserveIn  = p.reserveA;
+        uint reserveOut = p.reserveB;
+
+        uint amountOut = getAmountOut(amountIn, reserveIn, reserveOut);
+        require(amountOut >= amountOutMin, "Slippage");
+
+        IERC20(path[0]).transferFrom(msg.sender, address(this), amountIn);
+        IERC20(path[1]).transfer(to, amountOut);
+
+        p.reserveA  += amountIn;
+        p.reserveB -= amountOut;
+    
+        
+    }
 }
